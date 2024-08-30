@@ -116,4 +116,96 @@ router.post('/', async(req, res) => {
     }
 });
 
+router.put('/:colaboradorId', async (req, res) => {
+    try {
+
+        const { vinculo, vinculoId, especialidades } = req.body;
+        const { colaboradorId } = req.params;
+
+        //VINCULO
+        await SalaoColaborador.findByIdAndUpdate(vinculoId, { satatus: vinculo });
+
+        //ESPECIALIDADES
+        await ColaboradorServico.deleteMany({
+            colaboradorId,
+        });
+
+        await ColaboradorServico.insertMany(
+            especialidade.map(
+                (servicoId) => ({
+                    servicoId,
+                    colaboradorId,
+                }))
+        );
+
+        res.json( { error: false});
+
+
+    } catch (err) {
+        res.json({ error: true, message: err.message})
+    }
+});
+
+router.delete('/vinculo/:id', async (req, res) => {
+    try{
+        await SalaoColaborador.findByIdAndUpdate(req.params.id, { status: 'E'});
+
+        res.json({ error: false });
+
+    } catch(err) {
+        res.json({ error: true, message: err.message});
+    }
+});
+
+router.post('/filter', async (req, res) => {
+    try{
+
+        const colaboradores = await Colaborador.find(req.body.filters);
+
+        res.json({ error: false, colaboradores});
+
+    } catch (err) {
+        res.json({ error: true, message: err.message})
+    }
+});
+
+router.get('/salao/:salaiId', async (req, res) => {
+    try{
+        const { salaoId } = req.params;
+        let listaColaboradores = [];
+
+        //RECUPERAR VINCULOS
+        const salaoColaboradores = await SalaoColaborador.find({
+            salaoId,
+            status: { $ne: 'E' },
+        }).populate({ path: 'colaboradorId', select: '-senha -recipientId' })
+        .select('colaboradorId dataCadastro status');
+
+        for (let vinculo of salaoColaboradores) {
+            const especialidades = await ColaboradorServico.find({
+                colaboradorId: vinculo.colaboradorId._id
+            });
+
+            listaColaboradores.push({
+                ...vinculo._doc,
+                especialidades,
+            });
+        }
+        
+        res.json({ 
+            error: false,
+            colaboradores: listaColaboradores.map((vinculo) => ({
+                ...vinculo.colaboradorId._dic,
+                vinculoId: vinculo._id,
+                vinculo: vinculo.status,
+                especialidaes: vinculo.especialidades,
+                dataCadastro: vinculo.dataCadastro,
+            })),
+        });
+
+    } catch (err) {
+        res.json({ error: true, message: err.message});
+    }
+});
+
 module.exports = router;

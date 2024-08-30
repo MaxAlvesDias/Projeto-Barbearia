@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 // URI do MongoDB com credenciais e nome do banco de dados
-const URI = 'mongodb+srv://adminUser:%40Miguelbarbearia300@clusterdev.lf9ma.mongodb.net/Miguel_Barbearia?retryWrites=true&w=majority&appName=Clusterdev';
+const URI = 'mongodb+srv://adminUser:Mongodb1007@clusterdev.lf9ma.mongodb.net/Miguel_Barbearia?retryWrites=true&w=majority&appName=Clusterdev';
 
 // Conexão com o banco de dados
 mongoose.connect(URI)
